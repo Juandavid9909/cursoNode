@@ -1,40 +1,33 @@
 const { response } = require("express");
-const { validationResult } = require("express-validator");
 const bcryptjs = require("bcryptjs");
 
 const Usuario = require("../models/usuario");
+const usuario = require("../models/usuario");
 
-const usuariosGet = (req, res = response) => {
-    const { q, nombre = "No name", apikey, page = 1, limit } = req.query;
+const usuariosGet = async(req, res = response) => {
+    // const { q, nombre = "No name", apikey, page = 1, limit } = req.query;
+    const { limite = 5, desde = 0 } = req.query;
+    const usuarios = await Usuario.find()
+        .skip(Number(desde))
+        .limit(Number(limite));
 
     res.json({
-        msg: "get API - controlador",
-        q,
-        nombre,
-        apikey,
-        page,
-        limit
+        usuarios
     })
 }
 
 const usuariosPost = async(req, res = response) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-        return res.status(400).json(errors);
-    }
-
     const { nombre, correo, password, rol } = req.body;
     const usuario = new Usuario({ nombre, correo, password, rol });
 
     // Verificar si el correo existe
-    const existeEmail = await Usuario.findOne({ correo });
+    // const existeEmail = await Usuario.findOne({ correo });
 
-    if (existeEmail) {
-        return res.status(400).json({
-            msg: "Ese correo ya está registrado"
-        });
-    }
+    // if (existeEmail) {
+    //     return res.status(400).json({
+    //         msg: "Ese correo ya está registrado"
+    //     });
+    // }
 
     // Encriptar la contraseña
     const salt = bcryptjs.genSaltSync();
@@ -49,13 +42,20 @@ const usuariosPost = async(req, res = response) => {
     })
 }
 
-const usuariosPut = (req, res = response) => {
+const usuariosPut = async(req, res = response) => {
     const { id } = req.params;
+    const { _id, password, google, correo, ...resto } = req.body;
 
-    res.json({
-        msg: "put API - controlador",
-        id
-    })
+    // TODO validar contra base de datos
+    if (password) {
+        // Encriptar la contraseña
+        const salt = bcryptjs.genSaltSync();
+        resto.password = bcryptjs.hashSync(password, salt);
+    }
+
+    const usuario = await Usuario.findByIdAndUpdate(id, resto);
+
+    res.json(usuario)
 }
 
 const usuariosPatch = (req, res = response) => {
