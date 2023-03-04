@@ -17,11 +17,11 @@ const emailExiste = async(correo = "") => {
     }
 }
 
-const existeUsuarioPorId = async(id = "") => {
-    const existeUsuario = await Usuario.findById({ id });
+const existeUsuarioPorId = async(_id = "") => {
+    const existeUsuario = await Usuario.findById({ _id });
 
     if (!existeUsuario) {
-        throw new Error(`El id no existe ${ id }`);
+        throw new Error(`El id no existe ${ _id }`);
     }
 }
 
