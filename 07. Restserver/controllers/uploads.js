@@ -1,7 +1,10 @@
 const { response } = require("express");
-const path = require("path");
 
-const cargarArchivo = (req, res = response) => {
+const { subirArchivo } = require("../helpers");
+
+const { Usuario, Producto } = require("../models")
+
+const cargarArchivo = async(req, res = response) => {
     if (!req.files || Object.keys(req.files).length === 0 || !req.files.archivo) {
         res.status(400).json({
             msg: "No hay archivos que subir"
@@ -10,23 +13,63 @@ const cargarArchivo = (req, res = response) => {
         return;
     }
 
-    const { archivo } = req.files;
+    try {
+        // Imagenes
+        const nombre = await subirArchivo(req.files, undefined, "imgs");
 
-    const uploadPath = path.join(__dirname, "../uploads/", archivo.name);
+        res.json({
+            nombre
+        });
+    } catch (msg) {
+        res.status(400).json({
+            msg
+        });
+    }
+}
 
-    archivo.mv(uploadPath, (err) => {
-        if (err) {
+const actualizarArchivo = async(req, res = response) => {
+    const { id, coleccion } = req.params;
+
+    let modelo;
+
+    switch (coleccion) {
+        case "usuarios":
+            modelo = await Usuario.findById(id);
+
+            if (!modelo) {
+                return res.status(400).json({
+                    msg: `No existe un usuario con el id ${ id }`
+                });
+            }
+
+            break;
+
+        case "productos":
+            modelo = await Producto.findById(id);
+
+            if (!modelo) {
+                return res.status(400).json({
+                    msg: `No existe un producto con el id ${ id }`
+                });
+            }
+
+            break;
+
+        default:
             return res.status(500).json({
-                err
+                msg: "Se me olvidó validar esto"
             });
-        }
-    });
+    }
 
-    res.json({
-        msg: "File uploaded to " + uploadPath
-    });
+    const nombre = await subirArchivo(req.files, undefined, coleccion);
+    modelo.img = nombre;
+
+    await modelo.save();
+
+    res.json(modelo);
 }
 
 module.exports = {
-    cargarArchivo
+    cargarArchivo,
+    actualizarArchivo
 }
