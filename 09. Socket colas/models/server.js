@@ -1,7 +1,7 @@
-const express = require('express');
-const cors = require('cors');
+const express = require("express");
+const cors = require("cors");
 
-const { socketController } = require('../sockets/controller');
+const { socketController } = require("../sockets/controller");
 
 class Server {
 
@@ -11,7 +11,7 @@ class Server {
         this.server = require("http").createServer(this.app);
         this.io = require("socket.io")(this.server);
 
-        this.paths = {}
+        this.paths = {};
 
         // Middlewares
         this.middlewares();
@@ -28,11 +28,11 @@ class Server {
         this.app.use(cors());
 
         // Directorio Público
-        this.app.use(express.static('public'));
+        this.app.use(express.static("public"));
     }
 
     routes() {
-        // this.app.use(this.paths.auth, require('../routes/auth'));
+        // this.app.use( this.paths.auth, require('../routes/auth'));
     }
 
     sockets() {
@@ -41,7 +41,7 @@ class Server {
 
     listen() {
         this.server.listen(this.port, () => {
-            console.log('Servidor corriendo en puerto', this.port);
+            console.log("Servidor corriendo en puerto", this.port);
         });
     }
 }
