@@ -73,11 +73,11 @@ class Server {
     }
 
     sockets() {
-        this.io.on("connection", socketController);
+        this.io.on("connection", (socket) => socketController(socket, this.io));
     }
 
     listen() {
-        this.app.listen(this.port, () => {
+        this.server.listen(this.port, () => {
             console.log("Servidor corriendo en puerto", this.port);
         });
     }
